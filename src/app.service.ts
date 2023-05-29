@@ -19,7 +19,6 @@ export class AppService {
   ) {}
 
   async send(payload: SendSms) {
-    // 生成6位随机数
     const code = Math.floor(Math.random() * 1000000);
     payload.code = code;
     return this.appService.create(payload);
