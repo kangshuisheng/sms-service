@@ -44,4 +44,4 @@ jobs:
                 docker stop $CONTAINER_NAME && docker rm $CONTAINER_NAME
             fi
 
-            docker container run --network my-network $CONTAINER_NAME -d -p $PORT:$PORT $IMAGE_NAME
+            docker container run --network my-network --name $CONTAINER_NAME -d -p $PORT:$PORT $IMAGE_NAME
