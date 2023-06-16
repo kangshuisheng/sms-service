@@ -8,6 +8,7 @@ on:
 env:
   IMAGE_NAME: sms-service
   IMAGE_TAG: latest
+  REGISTRY: ghcr.io
 
 jobs:
   build-and-push:
@@ -23,7 +24,7 @@ jobs:
       - name: Login to GitHub Packages
         uses: docker/login-action@v2
         with:
-          registry: docker.pkg.github.com
+          registry: ${{env.REGISTRY}}
           username: ${{ github.actor }}
           password: ${{ secrets.ACTION_TOKEN }}
 
@@ -32,4 +33,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
+          tags: ${{REGISTRY}}/${{ github.repository }}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
