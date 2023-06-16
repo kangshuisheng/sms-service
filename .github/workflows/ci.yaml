@@ -1,47 +1,35 @@
-name: Docker Image CI
+name: Build and Push Docker Image
+
 on:
   push:
-    branches: ['main']
-  pull_request:
-    branches: ['main']
+    branches:
+      - main
+
+env:
+  IMAGE_NAME: sms-service
+  IMAGE_TAG: latest
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    
     steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to GitHub Packages
+        uses: docker/login-action@v1
         with:
-          fetch-depth: 0
+          registry: docker.pkg.github.com
+          username: ${{ github.ACTOR }}
+          password: ${{ secrets.TOKEN }}
 
-      - name: 📂 Sync files
-        uses: milanmk/actions-file-deployer@master
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
         with:
-          remote-protocol: 'sftp'
-          sync: full # delta | full
-          remote-host: ${{secrets.SERVER_HOST}}
-          remote-user: ${{ secrets.USERNAME }}
-          ssh-private-key: ${{ secrets.KEY }}
-          remote-path: '/root/projects/sms-service'
-
-      - name: Deploy 🚀
-        uses: appleboy/ssh-action@v0.1.5
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          script: |
-            cd /root/projects/sms-service/
-
-            CONTAINER_NAME=sms-service
-            IMAGE_NAME=sms-service
-            PORT=3339
-
-            docker image build -t $IMAGE_NAME .
-
-            if docker container ls -a --filter name=$CONTAINER_NAME --format '{{.Names}}' | grep -q $CONTAINER_NAME; then
-                docker stop $CONTAINER_NAME && docker rm $CONTAINER_NAME
-            fi
-
-            docker container run --network my-network --name $CONTAINER_NAME -d -p $PORT:$PORT $IMAGE_NAME
+          context: .
+          push: true
+          tags: docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME:$IMAGE_TAG
