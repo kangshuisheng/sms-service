@@ -5,9 +5,8 @@ export const MongoModuleConfig: MongooseModuleAsyncOptions = {
   imports: [ConfigModule.forRoot(), ConfigModule],
   inject: [ConfigService],
   useFactory: (config: ConfigService) => {
-    const isDev =
-      config.get<string>('NODE_ENV') === 'development' ||
-      config.get<string>('NODE_ENV') === 'test';
+    const nodeEnv = config.get<string>('NODE_ENV');
+    const isDev = nodeEnv === 'development' || nodeEnv === 'test';
     const dbUrl = config.get<string>('MONGODB_URL');
     const auth = config.get<string>('MONGO_AUTH_SOURCE');
     const dbName = isDev
